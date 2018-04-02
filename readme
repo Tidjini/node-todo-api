@@ -1,0 +1,15 @@
+to start a git repo
+  - git init (to create the .git folder conatine all info and config for git repo)
+
+  - git status to view our files status
+
+  - .gitignore file
+
+  - git add .
+
+   -git remote add origin git@github.com:Tidjini/node-todo-api.git
+
+   -git push -u origin master
+
+
+   Mongoose is an ORM (Object Relational Mapping) for mongodb

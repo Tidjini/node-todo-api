@@ -1,5 +1,7 @@
 const { MongoClient } = require("mongodb");
-const mongoURL = "mongodb://tidjini:pass@ds213759.mlab.com:13759/node-todo-api";
+const { mongoURL } = require("../config/keys");
+
+//const mongoURL = "mongodb://tidjini:pass@ds213759.mlab.com:13759/node-todo-api";
 
 MongoClient.connect(mongoURL, (err, db) => {
   if (err) return console.log("Unable to connect to the database server api");
