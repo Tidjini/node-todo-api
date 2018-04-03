@@ -1,18 +1,18 @@
-const expect = require('expect');
-const request = require('supertest');
+const expect = require("expect");
+const request = require("supertest");
 
-const { app } = require('../server');
-const { Todo } = require('../models/Todo');
-const { ObjectID } = require('mongodb');
+const { app } = require("../server");
+const { Todo } = require("../models/Todo");
+const { ObjectID } = require("mongodb");
 
 const todos = [
   {
     _id: new ObjectID(),
-    text: 'First Test Todo'
+    text: "First Test Todo"
   },
   {
     _id: new ObjectID(),
-    text: 'Second Test Todo'
+    text: "Second Test Todo"
   }
 ];
 
@@ -32,17 +32,17 @@ beforeEach(done => {
 });
 
 //TO regroup tests (same categorie)
-describe('POST /todos', () => {
+describe("POST /todos", () => {
   //this.timeout(10000);
-  it('should create a new todo', done => {
+  it("should create a new todo", done => {
     //init the time out
     setTimeout(done, TIME_OUT);
 
-    const text = 'Test';
+    const text = "Test";
 
     //request from supertest : library for testing express app (handle test requesting to express application)
     request(app)
-      .post('/todos')
+      .post("/todos")
       .send({ text })
       .expect(200)
       .expect(res => {
@@ -65,10 +65,10 @@ describe('POST /todos', () => {
       });
   });
 
-  it('should not create a todo with invalid body request', done => {
+  it("should not create a todo with invalid body request", done => {
     setTimeout(done, TIME_OUT);
     request(app)
-      .post('/todos')
+      .post("/todos")
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -85,11 +85,11 @@ describe('POST /todos', () => {
       });
   });
 });
-describe('GET /todos', () => {
-  it('should get all todos list', done => {
+describe("GET /todos", () => {
+  it("should get all todos list", done => {
     setTimeout(done, TIME_OUT);
     request(app)
-      .get('/todos')
+      .get("/todos")
       .expect(200)
       .expect(res => {
         expect(res.body.todos.length).toBe(2);
@@ -98,8 +98,8 @@ describe('GET /todos', () => {
   });
 });
 
-describe('GET /todos/:id', () => {
-  it('should get todo item by valid id', done => {
+describe("GET /todos/:id", () => {
+  it("should get todo item by valid id", done => {
     setTimeout(done, TIME_OUT);
     request(app)
       .get(`/todos/${todos[0]._id.toHexString()}`)
@@ -110,7 +110,7 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 
-  it('should not get todo item by invalid id', done => {
+  it("should not get not found todo item", done => {
     setTimeout(done, TIME_OUT);
     const id = new ObjectID().toHexString();
     request(app)
@@ -119,11 +119,42 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 
-  it('should not get todo item by invalid id', done => {
+  it("should not get todo item by invalid id", done => {
     setTimeout(done, TIME_OUT);
-    const id = '5ac24acd7d636a3bf493f2b2zefzef';
+    const id = "5ac24acd7d636a3bf493f2b2zefzef";
     request(app)
       .get(`/todos/${id}`)
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe("DELETE /todos/:id", () => {
+  it("should delete todo item by valid id", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .delete(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
+  });
+
+  it("should not delete not found todo item", done => {
+    setTimeout(done, TIME_OUT);
+    const id = new ObjectID().toHexString();
+    request(app)
+      .delete(`/todos/${id}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it("should not delete todo item by invalid id", done => {
+    setTimeout(done, TIME_OUT);
+    const id = "5ac24acd7d636a3bf493f2b2zefzef";
+    request(app)
+      .delete(`/todos/${id}`)
       .expect(404)
       .end(done);
   });
