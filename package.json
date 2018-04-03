@@ -8,7 +8,8 @@
     "npm": "5.0.3"
   },
   "scripts": {
-    "test": "mocha server/**/*.test.js",
+    "test":
+      "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",
     "test-watch": "nodemon --exec \"npm test\"",
     "start": "node server/server.js"
   },

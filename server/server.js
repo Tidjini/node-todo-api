@@ -5,6 +5,8 @@ const { Todo } = require("./models/Todo");
 const { User } = require("./models/User");
 const { ObjectID } = require("mongodb");
 
+require("./config/config");
+
 const _ = require("lodash");
 
 const app = new express();
@@ -100,7 +102,7 @@ app.patch("/todos/:id", (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log("Started on Port", PORT);
