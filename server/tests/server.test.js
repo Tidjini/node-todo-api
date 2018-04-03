@@ -170,3 +170,47 @@ describe("DELETE /todos/:id", () => {
       .end(done);
   });
 });
+
+describe("PATCH /todos/:id", () => {
+  //this.timeout(10000);
+  it("should update a todo", done => {
+    //init the time out
+    //
+    setTimeout(done, TIME_OUT);
+    const todo = {
+      text: "text updated (item 1)",
+      complited: true
+    };
+    //request from supertest : library for testing express app (handle test requesting to express application)
+    request(app)
+      .patch(`/todos/${todos[0]._id.toHexString()}`)
+      .send(todo)
+      .expect(200)
+      .expect(res => {
+        //expect is simple library to do custom testing
+        expect(res.body.text).toBe(todo.text);
+        expect(res.body.complited).toBe(true);
+        expect(res.body.complitedAt).toBeA("number");
+      })
+      .end(done);
+  });
+
+  it("should clear complitedAt when todo  is not completed", done => {
+    setTimeout(done, TIME_OUT);
+    const todo = {
+      text: "text updated (item 2)",
+      complited: false
+    };
+    request(app)
+      .patch(`/todos/${todos[1]._id.toHexString()}`)
+      .send(todo)
+      .expect(200)
+      .expect(res => {
+        //expect is simple library to do custom testing
+        expect(res.body.text).toBe(todo.text);
+        expect(res.body.complited).toBe(false);
+        expect(res.body.complitedAt).toNotExist();
+      })
+      .end(done);
+  });
+});
