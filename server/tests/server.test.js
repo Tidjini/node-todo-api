@@ -120,7 +120,7 @@ describe("GET /todos/:id", () => {
   });
 
   it("should not get todo item by invalid id", done => {
-    setTimeout(done, TIME_OUT);
+    //setTimeout(done, TIME_OUT);
     const id = "5ac24acd7d636a3bf493f2b2zefzef";
     request(app)
       .get(`/todos/${id}`)
@@ -138,7 +138,18 @@ describe("DELETE /todos/:id", () => {
       .expect(res => {
         expect(res.body.todo.text).toBe(todos[0].text);
       })
-      .end(done);
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Todo.findById(todos[0]._id.toHexString())
+          .then(todo => {
+            //expecting that we added just one // NOTE: GOTO beforeEach if your already add data (init db to Collection)
+            expect(todo).toNotExist();
+            //call done method to out the result
+            done();
+          })
+          .catch(err => done(err));
+      });
   });
 
   it("should not delete not found todo item", done => {
@@ -151,7 +162,7 @@ describe("DELETE /todos/:id", () => {
   });
 
   it("should not delete todo item by invalid id", done => {
-    setTimeout(done, TIME_OUT);
+    //setTimeout(done, TIME_OUT);
     const id = "5ac24acd7d636a3bf493f2b2zefzef";
     request(app)
       .delete(`/todos/${id}`)
