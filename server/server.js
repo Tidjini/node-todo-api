@@ -5,6 +5,8 @@ const { Todo } = require("./models/Todo");
 const { User } = require("./models/User");
 const { ObjectID } = require("mongodb");
 
+const _ = require("lodash");
+
 const app = new express();
 
 app.use(bodyParser.json());
@@ -66,6 +68,36 @@ app.delete("/todos/:id", (req, res) => {
       res.status(400).send();
     }
   );
+});
+
+app.patch("/todos/:id", (req, res) => {
+  const id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  //previous way to pck data from body
+  // const todo = new Todo({
+  //   text: req.body.text
+  // });
+  //new version with lodash (picks item if it exist)
+  const body = _.pick(req.body, ["text", "complited"]);
+
+  if (_.isBoolean(body.complited) && body.complited) {
+    body.complitedAt = new Date().getTime();
+  } else {
+    body.complited = false;
+    body.complitedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+    .then(todo => {
+      if (todo == null) return res.status(404).send("TODO not found");
+      res.send({ todo });
+    })
+    .catch(err => {
+      res.status(400).send();
+    });
 });
 
 const PORT = process.env.PORT || 5000;
