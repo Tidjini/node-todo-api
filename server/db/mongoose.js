@@ -4,7 +4,9 @@ const { mongoURL } = require("../../config/keys");
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(mongoURL);
+const mongo_uri = process.env.MONGODB_URI || mongoURL;
+
+mongoose.connect(mongo_uri);
 
 module.exports = {
   mongoose
