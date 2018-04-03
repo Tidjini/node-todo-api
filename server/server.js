@@ -7,8 +7,6 @@ const { ObjectID } = require('mongodb');
 
 const app = new express();
 
-const PORT = 5000; //precess.env.PORT ||
-
 app.use(bodyParser.json());
 
 //post request
@@ -53,6 +51,8 @@ app.get('/todos/:id', (req, res) => {
     }
   );
 });
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log('Started on Port', PORT);

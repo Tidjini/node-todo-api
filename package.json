@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "8.1.1",
+    "npm": "5.0.3"
+  },
   "scripts": {
     "test": "mocha server/**/*.test.js",
-    "test-watch": "nodemon --exec \"npm test\""
+    "test-watch": "nodemon --exec \"npm test\"",
+    "start": "node server/server.js"
   },
   "author": "",
   "license": "ISC",
