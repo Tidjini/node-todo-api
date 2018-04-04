@@ -4,6 +4,7 @@ const { mongoose } = require("./db/mongoose");
 const { Todo } = require("./models/Todo");
 const { User } = require("./models/User");
 const { ObjectID } = require("mongodb");
+const { authenticate } = require("./middleware/authenticate");
 
 require("./config/config");
 
@@ -121,6 +122,11 @@ app.post("/users", (req, res) => {
     .catch(err => {
       res.status(400).send(err);
     });
+});
+
+//for private response to specefic user
+app.get("/users/me", authenticate, (req, res) => {
+  res.send(req.user);
 });
 
 const PORT = process.env.PORT;

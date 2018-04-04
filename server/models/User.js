@@ -60,6 +60,27 @@ UserSchema.methods.generateAuthToken = function() {
   });
 };
 
+//statics methods for Class (Some method attach the class not the instance)
+UserSchema.statics.findByToken = function(token) {
+  const User = this; // NOTE: this => for the class (the model)
+  let decoded;
+  try {
+    decoded = jwt.verify(token, "abc123");
+  } catch (e) {
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // });
+    return Promise.reject();
+  }
+
+  // NOTE: tokens.token => parcour each token object in tokens array stored in user object (also true for access)
+  return User.findOne({
+    _id: decoded._id,
+    "tokens.token": token,
+    "tokens.access": "auth"
+  });
+};
+
 const User = mongoose.model("User", UserSchema);
 
 module.exports = {
