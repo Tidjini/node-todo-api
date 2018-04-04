@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
+const bcrypt = require("bcryptjs");
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -59,6 +60,27 @@ UserSchema.methods.generateAuthToken = function() {
     return token;
   });
 };
+
+//use mongoose middleware (take action in given event) before save the user we need to hash the password
+//is look like express middleware call next to continue
+
+// NOTE: here before saving we must call the function with next param
+UserSchema.pre("save", function(next) {
+  const user = this;
+  //here this fun will be called before each save (and it's error; cause we need to track just the password changement)
+  //to resolve this we need to check password changement
+  if (user.isModified("password")) {
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  } else {
+    next();
+  }
+});
+//UserSchema.methods.generateHashPassword = function(password) {};
 
 //statics methods for Class (Some method attach the class not the instance)
 UserSchema.statics.findByToken = function(token) {
