@@ -3,33 +3,19 @@ const request = require("supertest");
 
 const { app } = require("../server");
 const { Todo } = require("../models/Todo");
+const { User } = require("../models/User");
 const { ObjectID } = require("mongodb");
+const {
+  todos,
+  TIME_OUT,
+  populateTodos,
+  users,
+  populateUsers
+} = require("./seed/seed");
 
-const todos = [
-  {
-    _id: new ObjectID(),
-    text: "First Test Todo"
-  },
-  {
-    _id: new ObjectID(),
-    text: "Second Test Todo"
-  }
-];
+beforeEach(populateUsers);
 
-const TIME_OUT = 0;
-//remove before each done method
-beforeEach(done => {
-  //init the time out
-  //this.timeout(10000);
-  setTimeout(done, TIME_OUT);
-  //
-  Todo.remove({})
-    .then(() => {
-      //for getting some data
-      return Todo.insertMany(todos);
-    })
-    .then(() => done());
-});
+beforeEach(populateTodos);
 
 //TO regroup tests (same categorie)
 describe("POST /todos", () => {
@@ -210,6 +196,78 @@ describe("PATCH /todos/:id", () => {
         expect(res.body.text).toBe(todo.text);
         expect(res.body.complited).toBe(false);
         expect(res.body.complitedAt).toNotExist();
+      })
+      .end(done);
+  });
+});
+
+describe("POST /users", () => {
+  it("it should create a user", done => {
+    //request from supertest : library for testing express app (handle test requesting to express application)
+    const newUser = { email: "tijim@mail.com", password: "561651azef" };
+    request(app)
+      .post("/users")
+      .send(newUser)
+      .expect(200)
+      .expect(res => {
+        expect(res.headers["x-auth"]).toExist();
+        expect(res.body._id).toExist();
+        expect(res.body.email).toBe(user.email);
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+        User.findOne({ email: user.email })
+          .then(user => {
+            expect(user).toExist();
+            expect(user.password).toNotBe(newUser.password);
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+
+  it("should return validation errors", done => {
+    //request from supertest : library for testing express app (handle test requesting to express application)
+    const user = { email: "tiji  mail.com", password: "561651azef" };
+    request(app)
+      .post("/users")
+      .send(user)
+      .expect(400)
+      .end(done);
+  });
+
+  it("should not create user cause email is used", done => {
+    //request from supertest : library for testing express app (handle test requesting to express application)
+    //const user = { email: "tiji  mail.com", password: "561651azef" };
+    request(app)
+      .post("/users")
+      .send({ email: users[0].email, password: "5614azaz" })
+      .expect(400)
+      .end(done);
+  });
+});
+
+describe("GET /users/me", () => {
+  it("Should get back user {_id, email} with givin token (in header)", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .get("/users/me")
+      .set("x-auth", users[0].tokens[0].token) //set the header
+      .expect(200)
+      .expect(res => {
+        expect(res.body._id).toBe(users[0]._id.toHexString());
+        expect(res.body.email).toBe(users[0].email);
+      })
+      .end(done);
+  });
+
+  it("Should get 401 if not authenticated", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .get("/users/me")
+      .expect(401)
+      .expect(res => {
+        expect(res.body).toEqaul({});
       })
       .end(done);
   });
