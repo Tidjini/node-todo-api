@@ -321,3 +321,46 @@ describe("POST /users/login", () => {
       });
   });
 });
+
+describe("DELETE /users/me/token", () => {
+  it("Should logout user with valid token", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .delete("/users/me/token")
+      .set("x-auth", users[0].tokens[0].token) //set the header
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        User.findById(users[0]._id)
+          .then(user => {
+            expect(user.tokens.length).toBe(0);
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+
+  it("Should reject logout request", done => {
+    setTimeout(done, TIME_OUT);
+    const user = { email: "mal@example.com", password: "25465dsd" };
+    request(app)
+      .post("/users/login")
+      .send(user)
+      .expect(400)
+      .expect(res => {
+        expect(res.headers["x-auth"]).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+        User.findById(res.body._id)
+          .then(user => {
+            expect(user.tokens[0]).notToInclude({
+              access: "auth",
+              token: res.headers["x-auth"]
+            });
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+});
