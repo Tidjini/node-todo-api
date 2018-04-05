@@ -29,6 +29,7 @@ describe("POST /todos", () => {
     //request from supertest : library for testing express app (handle test requesting to express application)
     request(app)
       .post("/todos")
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .send({ text })
       .expect(200)
       .expect(res => {
@@ -55,6 +56,7 @@ describe("POST /todos", () => {
     setTimeout(done, TIME_OUT);
     request(app)
       .post("/todos")
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -76,9 +78,10 @@ describe("GET /todos", () => {
     setTimeout(done, TIME_OUT);
     request(app)
       .get("/todos")
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .expect(200)
       .expect(res => {
-        expect(res.body.todos.length).toBe(2);
+        expect(res.body.todos.length).toBe(1);
       })
       .end(done);
   });
@@ -88,6 +91,7 @@ describe("GET /todos/:id", () => {
   it("should get todo item by valid id", done => {
     setTimeout(done, TIME_OUT);
     request(app)
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .get(`/todos/${todos[0]._id.toHexString()}`)
       .expect(200)
       .expect(res => {
@@ -96,10 +100,20 @@ describe("GET /todos/:id", () => {
       .end(done);
   });
 
+  it("should not get todo(created by other user) back ", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .set("x-auth", users[1].tokens[0].token) //set the header
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(404)
+      .end(done);
+  });
+
   it("should not get not found todo item", done => {
     setTimeout(done, TIME_OUT);
     const id = new ObjectID().toHexString();
     request(app)
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .get(`/todos/${id}`)
       .expect(404)
       .end(done);
@@ -109,6 +123,7 @@ describe("GET /todos/:id", () => {
     //setTimeout(done, TIME_OUT);
     const id = "5ac24acd7d636a3bf493f2b2zefzef";
     request(app)
+      .set("x-auth", users[0].tokens[0].token) //set the header
       .get(`/todos/${id}`)
       .expect(404)
       .end(done);
@@ -287,7 +302,7 @@ describe("POST /users/login", () => {
         if (err) return done(err);
         User.findById(res.body._id)
           .then(user => {
-            expect(user.tokens[0]).toInclude({
+            expect(user.tokens[1]).toInclude({
               access: "auth",
               token: res.headers["x-auth"]
             });
@@ -299,7 +314,7 @@ describe("POST /users/login", () => {
 
   it("Should reject invalid login", done => {
     setTimeout(done, TIME_OUT);
-    const user = { email: "mal@example.com", password: "25465" };
+    const user = { email: users[0].email, password: "25465" };
     request(app)
       .post("/users/login")
       .send(user)
@@ -309,12 +324,9 @@ describe("POST /users/login", () => {
       })
       .end((err, res) => {
         if (err) return done(err);
-        User.findById(res.body._id)
+        User.findById(users[0]._id)
           .then(user => {
-            expect(user.tokens[0]).notToInclude({
-              access: "auth",
-              token: res.headers["x-auth"]
-            });
+            expect(user.tokens.length).toBe(1);
             done();
           })
           .catch(err => done(err));
@@ -334,30 +346,6 @@ describe("DELETE /users/me/token", () => {
         User.findById(users[0]._id)
           .then(user => {
             expect(user.tokens.length).toBe(0);
-            done();
-          })
-          .catch(err => done(err));
-      });
-  });
-
-  it("Should reject logout request", done => {
-    setTimeout(done, TIME_OUT);
-    const user = { email: "mal@example.com", password: "25465dsd" };
-    request(app)
-      .post("/users/login")
-      .send(user)
-      .expect(400)
-      .expect(res => {
-        expect(res.headers["x-auth"]).toNotExist();
-      })
-      .end((err, res) => {
-        if (err) return done(err);
-        User.findById(res.body._id)
-          .then(user => {
-            expect(user.tokens[0]).notToInclude({
-              access: "auth",
-              token: res.headers["x-auth"]
-            });
             done();
           })
           .catch(err => done(err));
