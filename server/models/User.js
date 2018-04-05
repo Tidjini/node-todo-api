@@ -94,12 +94,33 @@ UserSchema.statics.findByToken = function(token) {
     // });
     return Promise.reject();
   }
-
   // NOTE: tokens.token => parcour each token object in tokens array stored in user object (also true for access)
   return User.findOne({
     _id: decoded._id,
     "tokens.token": token,
     "tokens.access": "auth"
+  });
+};
+
+UserSchema.statics.findByCreadentials = function(email, password) {
+  const User = this; // NOTE: this => for the class (the model)
+  return User.findOne({ email }).then(user => {
+    if (!user) {
+      //if user don't exist return reject promise to fire the catch in the call
+      return Promise.reject();
+    }
+    return new Promise((resolve, reject) => {
+      //verify the password with bcrypt method
+      //if pass match return the user
+      //else logout
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (res) {
+          resolve(user);
+        } else {
+          reject();
+        }
+      });
+    });
   });
 };
 

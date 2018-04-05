@@ -124,9 +124,23 @@ app.post("/users", (req, res) => {
     });
 });
 
-//for private response to specefic user
+//for private response to specefic user (use authenticate middleware)
 app.get("/users/me", authenticate, (req, res) => {
   res.send(req.user);
+});
+
+app.post("/users/login", (req, res) => {
+  const body = _.pick(req.body, ["email", "password"]);
+
+  User.findByCreadentials(body.email, body.password)
+    .then(user => {
+      user.generateAuthToken().then(token => {
+        res.header("x-auth", token).send(user);
+      });
+    })
+    .catch(err => {
+      res.status(400).send();
+    });
 });
 
 const PORT = process.env.PORT;
