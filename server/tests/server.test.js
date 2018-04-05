@@ -272,3 +272,52 @@ describe("GET /users/me", () => {
       .end(done);
   });
 });
+
+describe("POST /users/login", () => {
+  it("Should login user with valid creadentials", done => {
+    setTimeout(done, TIME_OUT);
+    request(app)
+      .post("/users/login")
+      .send(users[0])
+      .expect(200)
+      .expect(res => {
+        expect(res.headers["x-auth"]).toExist();
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+        User.findById(res.body._id)
+          .then(user => {
+            expect(user.tokens[0]).toInclude({
+              access: "auth",
+              token: res.headers["x-auth"]
+            });
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+
+  it("Should reject invalid login", done => {
+    setTimeout(done, TIME_OUT);
+    const user = { email: "mal@example.com", password: "25465" };
+    request(app)
+      .post("/users/login")
+      .send(user)
+      .expect(400)
+      .expect(res => {
+        expect(res.headers["x-auth"]).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+        User.findById(res.body._id)
+          .then(user => {
+            expect(user.tokens[0]).notToInclude({
+              access: "auth",
+              token: res.headers["x-auth"]
+            });
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+});
