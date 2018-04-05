@@ -60,6 +60,18 @@ UserSchema.methods.generateAuthToken = function() {
     return token;
   });
 };
+UserSchema.methods.removeToken = function(token) {
+  const user = this;
+  //we need to update this instance of user by pulling the actual token (pass in arg) froms array of tokens
+  //for this we user the key $pull
+  return user.update({
+    $pull: {
+      tokens: {
+        token
+      }
+    }
+  });
+};
 
 //use mongoose middleware (take action in given event) before save the user we need to hash the password
 //is look like express middleware call next to continue
