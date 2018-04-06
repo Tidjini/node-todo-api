@@ -1,8 +1,8 @@
-const { Todo } = require("../../models/Todo");
-const { User } = require("../../models/User");
-const { ObjectID } = require("mongodb");
+const { Todo } = require('../../models/Todo');
+const { User } = require('../../models/User');
+const { ObjectID } = require('mongodb');
 
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 const TIME_OUT = 0;
 
 const userIdOne = new ObjectID();
@@ -10,26 +10,32 @@ const userIdTwo = new ObjectID();
 const users = [
   {
     _id: userIdOne,
-    email: "tidjin@example.com",
-    password: "userOnePass",
+    email: 'tidjin@example.com',
+    password: 'userOnePass',
     tokens: [
       {
-        access: "auth",
+        access: 'auth',
         token: jwt
-          .sign({ _id: userIdOne.toHexString(), access: "auth" }, "abc123")
+          .sign(
+            { _id: userIdOne.toHexString(), access: 'auth' },
+            process.env.JWT_SECRET
+          )
           .toString()
       }
     ]
   },
   {
     _id: userIdTwo,
-    email: "mess@example.com",
-    password: "userTwoPass",
+    email: 'mess@example.com',
+    password: 'userTwoPass',
     tokens: [
       {
-        access: "auth",
+        access: 'auth',
         token: jwt
-          .sign({ _id: userIdTwo.toHexString(), access: "auth" }, "abc123")
+          .sign(
+            { _id: userIdTwo.toHexString(), access: 'auth' },
+            process.env.JWT_SECRET
+          )
           .toString()
       }
     ]
@@ -58,12 +64,12 @@ const populateUsers = done => {
 const todos = [
   {
     _id: new ObjectID(),
-    text: "First Test Todo",
+    text: 'First Test Todo',
     _creator: userIdOne
   },
   {
     _id: new ObjectID(),
-    text: "Second Test Todo",
+    text: 'Second Test Todo',
     _creator: userIdTwo
   }
 ];
